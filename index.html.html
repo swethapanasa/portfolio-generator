@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Portfolio Generator — Build Your Portfolio in Minutes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --white: #ffffff; --off: #f7f6f3; --border: #e8e5de;
+      --text: #1a1a18; --muted: #6b6a65; --accent: #2563eb;
+      --accent-light: #eff4ff; --radius: 10px; --green: #16a34a; --green-light: #f0fdf4;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--off); color: var(--text); line-height: 1.7; font-size: 16px; min-height: 100vh; }
+
+    header { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+    .logo { font-weight: 600; font-size: 15px; letter-spacing: -0.02em; }
+    .logo span { color: var(--accent); }
+    .badge { background: var(--accent-light); color: var(--accent); font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 100px; }
+
+    .hero { text-align: center; padding: 4rem 2rem 2rem; max-width: 600px; margin: 0 auto; }
+    .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 4vw, 2.8rem); line-height: 1.2; margin-bottom: 0.75rem; }
+    .hero h1 span { color: var(--accent); }
+    .hero p { color: var(--muted); font-size: 16px; }
+
+    .steps { display: flex; justify-content: center; gap: 2rem; padding: 1.5rem 2rem 2.5rem; flex-wrap: wrap; }
+    .step { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); font-weight: 500; }
+    .step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--accent-light); color: var(--accent); font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+    .form-wrap { max-width: 760px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+    .form-card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+
+    .tabs { display: flex; border-bottom: 1px solid var(--border); overflow-x: auto; }
+    .tab { flex-shrink: 0; padding: 0.9rem 1.1rem; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; border: none; background: none; transition: all 0.2s; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--accent-light); }
+    .tab:hover:not(.active) { background: var(--off); color: var(--text); }
+
+    .form-section { display: none; padding: 2rem; }
+    .form-section.active { display: block; }
+    .section-title { font-size: 15px; font-weight: 600; margin-bottom: 0.25rem; }
+    .section-sub { font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .field-row.single { grid-template-columns: 1fr; }
+    .field-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    label { font-size: 13px; font-weight: 500; color: var(--text); }
+    label .opt { color: var(--muted); font-weight: 400; }
+    input[type="text"], input[type="email"], input[type="url"], input[type="number"], textarea, select {
+      width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius);
+      font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text);
+      background: var(--white); outline: none; transition: border-color 0.2s;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+    textarea { resize: vertical; min-height: 75px; }
+
+    /* THEME GRID */
+    .theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; margin-top: 0.5rem; }
+    .theme-swatch { border: 2px solid var(--border); border-radius: var(--radius); padding: 10px 8px; cursor: pointer; text-align: center; transition: all 0.18s; background: var(--white); }
+    .theme-swatch:hover { border-color: #aaa; transform: translateY(-1px); }
+    .theme-swatch.selected { border-color: var(--text); box-shadow: 0 0 0 3px var(--accent-light); }
+    .swatch-dot { width: 28px; height: 28px; border-radius: 50%; margin: 0 auto 6px; }
+    .swatch-name { font-size: 11px; font-weight: 500; color: var(--text); }
+    .swatch-hex { font-size: 10px; color: var(--muted); }
+
+    /* PROJECT BLOCKS */
+    .projects-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .proj-count { font-size: 13px; color: var(--muted); font-weight: 500; }
+    .project-block { border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; background: var(--off); }
+    .project-block .block-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    .project-block .block-label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .remove-btn { background: none; border: 1px solid var(--border); color: var(--muted); font-size: 13px; cursor: pointer; padding: 3px 10px; border-radius: 6px; line-height: 1.4; transition: all 0.15s; }
+    .remove-btn:hover { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
+    .add-btn { display: flex; align-items: center; gap: 6px; background: none; border: 1.5px dashed var(--border); color: var(--muted); font-size: 13px; font-weight: 500; padding: 9px 16px; border-radius: var(--radius); cursor: pointer; width: 100%; justify-content: center; transition: all 0.2s; margin-top: 0.5rem; }
+    .add-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+    .add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .form-nav { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 2rem; border-top: 1px solid var(--border); background: var(--off); }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 20px; border-radius: var(--radius); font-size: 14px; font-weight: 500; cursor: pointer; border: none; transition: all 0.18s; font-family: 'Inter', sans-serif; }
+    .btn-ghost { background: none; color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--text); color: var(--text); background: var(--white); }
+    .btn-primary { background: var(--text); color: white; }
+    .btn-primary:hover { background: #333; }
+    .btn-generate { background: var(--accent); color: white; font-size: 15px; padding: 11px 28px; }
+    .btn-generate:hover { background: #1d4ed8; }
+    .progress { font-size: 13px; color: var(--muted); }
+
+    .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.93); z-index: 100; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; }
+    .loading-overlay.show { display: flex; }
+    .spinner { width: 44px; height: 44px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 16px; font-weight: 600; color: var(--text); }
+    .loading-sub { font-size: 13px; color: var(--muted); }
+    .loading-bar-wrap { width: 240px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .loading-bar { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width 0.4s ease; }
+
+    .result-wrap { display: none; max-width: 760px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+    .result-wrap.show { display: block; }
+    .result-card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .result-header { background: var(--green-light); border-bottom: 1px solid #bbf7d0; padding: 1.5rem 2rem; display: flex; align-items: center; gap: 12px; }
+    .result-header .icon { width: 40px; height: 40px; background: var(--green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; flex-shrink: 0; }
+    .result-header h2 { font-size: 16px; font-weight: 600; color: var(--green); margin-bottom: 2px; }
+    .result-header p { font-size: 13px; color: #166534; }
+    .result-body { padding: 2rem; }
+    .result-actions { display: flex; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .btn-download { background: var(--text); color: white; }
+    .btn-download:hover { background: #333; }
+    .btn-redo { background: none; color: var(--text); border: 1px solid var(--border); }
+    .btn-redo:hover { background: var(--off); }
+    .preview-frame { border: 1px solid var(--border); border-radius: var(--radius); width: 100%; height: 520px; }
+    .result-tips { margin-top: 1.5rem; background: var(--accent-light); border-radius: var(--radius); padding: 1.25rem; }
+    .result-tips h4 { font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 0.5rem; }
+    .result-tips ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+    .result-tips li { font-size: 13px; color: #1e40af; }
+    .result-tips li::before { content: "→ "; }
+
+    @media (max-width: 580px) {
+      .field-row, .field-row.triple { grid-template-columns: 1fr; }
+      .form-nav { flex-wrap: wrap; gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Portfolio<span>Gen</span></div>
+  <span class="badge">Free · No signup · AI-powered</span>
+</header>
+
+<div class="hero">
+  <h1>Build your portfolio<br/><span>in minutes</span></h1>
+  <p>Fill in your details — get a clean, professional portfolio website you can download and deploy for free.</p>
+</div>
+
+<div class="steps">
+  <div class="step"><div class="step-num">1</div> Fill your details</div>
+  <div class="step"><div class="step-num">2</div> Add projects &amp; pick theme</div>
+  <div class="step"><div class="step-num">3</div> Download &amp; deploy</div>
+</div>
+
+<div class="form-wrap" id="formWrap">
+  <div class="form-card">
+    <div class="tabs">
+      <button class="tab active" onclick="goTab(0)">👤 Personal</button>
+      <button class="tab" onclick="goTab(1)">💼 Projects</button>
+      <button class="tab" onclick="goTab(2)">🎨 Theme</button>
+      <button class="tab" onclick="goTab(3)">🔗 Links</button>
+    </div>
+
+    <!-- TAB 0: PERSONAL -->
+    <div class="form-section active" id="tab0">
+      <div class="section-title">Personal information</div>
+      <div class="section-sub">This populates your hero, about, and contact sections.</div>
+      <div class="field-row">
+        <div class="field"><label>Full name *</label><input type="text" id="name" placeholder="e.g. Arjun Reddy"/></div>
+        <div class="field"><label>Job title / tagline *</label><input type="text" id="jobtitle" placeholder="e.g. Frontend Developer"/></div>
+      </div>
+      <div class="field-row single">
+        <div class="field"><label>Short bio * <span class="opt">(2–3 sentences about you)</span></label>
+        <textarea id="bio" rows="3" placeholder="e.g. I'm a web development student from Hyderabad passionate about building clean, user-friendly interfaces. I love turning ideas into real, interactive experiences."></textarea></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Location <span class="opt">(optional)</span></label><input type="text" id="location" placeholder="e.g. Hyderabad, India"/></div>
+        <div class="field"><label>Email *</label><input type="email" id="email" placeholder="you@example.com"/></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Skills <span class="opt">(comma separated)</span></label><input type="text" id="skills" placeholder="HTML, CSS, JavaScript, React"/></div>
+        <div class="field"><label>Status badge</label>
+          <select id="status">
+            <option>Open to opportunities</option>
+            <option>Available for internships</option>
+            <option>Currently learning</option>
+            <option>Open to collaborations</option>
+            <option>Seeking full-time roles</option>
+            <option>Freelance available</option>
+            <option>Final year student</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 1: PROJECTS -->
+    <div class="form-section" id="tab1">
+      <div class="projects-header">
+        <div>
+          <div class="section-title">Your projects</div>
+          <div class="section-sub" style="margin-bottom:0">Add up to 50 projects. Even simple beginner projects count!</div>
+        </div>
+        <span class="proj-count" id="projCount">0 / 50</span>
+      </div>
+      <div id="projectsContainer"></div>
+      <button class="add-btn" id="addProjBtn" onclick="addProject()">+ Add project</button>
+    </div>
+
+    <!-- TAB 2: THEME -->
+    <div class="form-section" id="tab2">
+      <div class="section-title">Choose your color theme</div>
+      <div class="section-sub">Pick a vibe — this sets the accent color throughout your portfolio.</div>
+      <div class="theme-grid" id="themeGrid"></div>
+      <input type="hidden" id="selectedTheme" value="blue"/>
+    </div>
+
+    <!-- TAB 3: LINKS -->
+    <div class="form-section" id="tab3">
+      <div class="section-title">Social &amp; links</div>
+      <div class="section-sub">All optional. Fill what you have — these appear in your contact section.</div>
+      <div class="field-row">
+        <div class="field"><label>GitHub URL</label><input type="url" id="github" placeholder="https://github.com/username"/></div>
+        <div class="field"><label>LinkedIn URL</label><input type="url" id="linkedin" placeholder="https://linkedin.com/in/username"/></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Twitter / X URL</label><input type="url" id="twitter" placeholder="https://twitter.com/username"/></div>
+        <div class="field"><label>Resume / CV link</label><input type="url" id="resume" placeholder="https://drive.google.com/..."/></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Portfolio / Website</label><input type="url" id="website" placeholder="https://yoursite.com"/></div>
+        <div class="field"><label>YouTube</label><input type="url" id="youtube" placeholder="https://youtube.com/@username"/></div>
+      </div>
+      <div class="field-row single">
+        <div class="field"><label>Any other link label</label><input type="text" id="extraLabel" placeholder="e.g. Hashnode Blog"/></div>
+      </div>
+      <div class="field-row single">
+        <div class="field"><label>Any other link URL</label><input type="url" id="extraUrl" placeholder="https://..."/></div>
+      </div>
+    </div>
+
+    <div class="form-nav">
+      <span class="progress" id="progressText">Step 1 of 4</span>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button class="btn btn-ghost" id="prevBtn" onclick="prevTab()" style="display:none;">← Back</button>
+        <button class="btn btn-primary" id="nextBtn" onclick="nextTab()">Next →</button>
+        <button class="btn btn-generate" id="generateBtn" style="display:none;" onclick="generatePortfolio()">✨ Generate My Portfolio</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div class="result-wrap" id="resultWrap">
+  <div class="result-card">
+    <div class="result-header">
+      <div class="icon">✓</div>
+      <div>
+        <h2>Your portfolio is ready!</h2>
+        <p>Download the file and open it in any browser — or deploy it free in 30 seconds on Netlify.</p>
+      </div>
+    </div>
+    <div class="result-body">
+      <div class="result-actions">
+        <button class="btn btn-download" onclick="downloadPortfolio()">⬇ Download portfolio.html</button>
+        <button class="btn btn-redo" onclick="startOver()">← Edit details</button>
+      </div>
+      <iframe class="preview-frame" id="previewFrame" title="Portfolio preview"></iframe>
+      <div class="result-tips">
+        <h4>How to go live for free</h4>
+        <ul>
+          <li>Go to <strong>netlify.com/drop</strong> and drag your downloaded HTML file — instant live URL.</li>
+          <li>Or push to a GitHub repo and enable <strong>GitHub Pages</strong> under Settings → Pages.</li>
+          <li>Update the project links (#) with your actual GitHub repo or live demo URLs.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">Building your portfolio...</div>
+  <div class="loading-sub" id="loadingSub">AI is writing your personalized HTML</div>
+  <div class="loading-bar-wrap"><div class="loading-bar" id="loadingBar"></div></div>
+</div>
+
+<script>
+// ─── STATE ───
+let currentTab = 0;
+let projectCount = 0;
+let generatedHTML = '';
+const MAX_PROJECTS = 50;
+
+// ─── THEMES (24 total) ───
+const THEMES = [
+  { id:'blue',      name:'Ocean Blue',    accent:'#2563eb', light:'#eff4ff', dark:'#1d4ed8' },
+  { id:'sky',       name:'Sky',           accent:'#0284c7', light:'#e0f2fe', dark:'#0369a1' },
+  { id:'cyan',      name:'Cyan',          accent:'#0891b2', light:'#ecfeff', dark:'#0e7490' },
+  { id:'teal',      name:'Teal',          accent:'#0d9488', light:'#f0fdfa', dark:'#0f766e' },
+  { id:'green',     name:'Forest Green',  accent:'#16a34a', light:'#f0fdf4', dark:'#15803d' },
+  { id:'lime',      name:'Lime',          accent:'#65a30d', light:'#f7fee7', dark:'#4d7c0f' },
+  { id:'emerald',   name:'Emerald',       accent:'#059669', light:'#ecfdf5', dark:'#047857' },
+  { id:'yellow',    name:'Amber',         accent:'#d97706', light:'#fffbeb', dark:'#b45309' },
+  { id:'orange',    name:'Sunset',        accent:'#ea580c', light:'#fff7ed', dark:'#c2410c' },
+  { id:'red',       name:'Crimson',       accent:'#dc2626', light:'#fef2f2', dark:'#b91c1c' },
+  { id:'rose',      name:'Rose',          accent:'#e11d48', light:'#fff1f2', dark:'#be123c' },
+  { id:'pink',      name:'Pink',          accent:'#db2777', light:'#fdf2f8', dark:'#be185d' },
+  { id:'fuchsia',   name:'Fuchsia',       accent:'#c026d3', light:'#fdf4ff', dark:'#a21caf' },
+  { id:'purple',    name:'Purple',        accent:'#7c3aed', light:'#f5f3ff', dark:'#6d28d9' },
+  { id:'violet',    name:'Violet',        accent:'#6d28d9', light:'#f5f3ff', dark:'#5b21b6' },
+  { id:'indigo',    name:'Indigo',        accent:'#4f46e5', light:'#eef2ff', dark:'#4338ca' },
+  { id:'slate',     name:'Slate',         accent:'#475569', light:'#f8fafc', dark:'#334155' },
+  { id:'zinc',      name:'Charcoal',      accent:'#52525b', light:'#fafafa', dark:'#3f3f46' },
+  { id:'midnight',  name:'Midnight',      accent:'#1e293b', light:'#f1f5f9', dark:'#0f172a' },
+  { id:'brown',     name:'Coffee',        accent:'#92400e', light:'#fef3c7', dark:'#78350f' },
+  { id:'gold',      name:'Gold',          accent:'#b45309', light:'#fef9c3', dark:'#92400e' },
+  { id:'coral',     name:'Coral',         accent:'#f97316', light:'#fff7ed', dark:'#ea580c' },
+  { id:'mint',      name:'Mint',          accent:'#10b981', light:'#ecfdf5', dark:'#059669' },
+  { id:'lavender',  name:'Lavender',      accent:'#8b5cf6', light:'#f5f3ff', dark:'#7c3aed' },
+];
+
+// ─── BUILD THEME SWATCHES ───
+function buildThemeGrid() {
+  const grid = document.getElementById('themeGrid');
+  THEMES.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'theme-swatch' + (t.id === 'blue' ? ' selected' : '');
+    div.dataset.id = t.id;
+    div.innerHTML = `<div class="swatch-dot" style="background:${t.accent}"></div><div class="swatch-name">${t.name}</div><div class="swatch-hex">${t.accent}</div>`;
+    div.onclick = () => selectTheme(t.id);
+    grid.appendChild(div);
+  });
+}
+function selectTheme(id) {
+  document.querySelectorAll('.theme-swatch').forEach(s => s.classList.toggle('selected', s.dataset.id === id));
+  document.getElementById('selectedTheme').value = id;
+}
+buildThemeGrid();
+
+// ─── TABS ───
+const TAB_LABELS = ['Step 1 of 4', 'Step 2 of 4', 'Step 3 of 4', 'Step 4 of 4'];
+function goTab(n) {
+  const total = 4;
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===n));
+  document.querySelectorAll('.form-section').forEach((s,i) => s.classList.toggle('active', i===n));
+  currentTab = n;
+  document.getElementById('progressText').textContent = TAB_LABELS[n];
+  document.getElementById('prevBtn').style.display = n===0 ? 'none' : '';
+  document.getElementById('nextBtn').style.display = n===total-1 ? 'none' : '';
+  document.getElementById('generateBtn').style.display = n===total-1 ? '' : 'none';
+}
+function nextTab() { if (currentTab < 3) goTab(currentTab+1); }
+function prevTab() { if (currentTab > 0) goTab(currentTab-1); }
+
+// ─── PROJECTS ───
+let projIdCounter = 0;
+function updateProjCount() {
+  const blocks = document.querySelectorAll('.project-block');
+  const c = blocks.length;
+  document.getElementById('projCount').textContent = `${c} / ${MAX_PROJECTS}`;
+  const btn = document.getElementById('addProjBtn');
+  btn.disabled = c >= MAX_PROJECTS;
+  btn.textContent = c >= MAX_PROJECTS ? `Max ${MAX_PROJECTS} projects reached` : '+ Add project';
+}
+function addProject() {
+  const blocks = document.querySelectorAll('.project-block');
+  if (blocks.length >= MAX_PROJECTS) return;
+  const id = projIdCounter++;
+  const num = blocks.length + 1;
+  const container = document.getElementById('projectsContainer');
+  const div = document.createElement('div');
+  div.className = 'project-block';
+  div.id = `pb${id}`;
+  div.innerHTML = `
+    <div class="block-header">
+      <span class="block-label">Project ${num}</span>
+      <button class="remove-btn" onclick="removeProject('pb${id}')">✕ Remove</button>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Project name *</label><input type="text" id="p${id}_name" placeholder="e.g. Weather App"/></div>
+      <div class="field"><label>Live link <span class="opt">(optional)</span></label><input type="url" id="p${id}_url" placeholder="https://..."/></div>
+    </div>
+    <div class="field-row single">
+      <div class="field"><label>Description *</label><textarea id="p${id}_desc" rows="2" placeholder="What does it do? What did you build?"></textarea></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Technologies <span class="opt">(comma separated)</span></label><input type="text" id="p${id}_tech" placeholder="HTML, CSS, JavaScript"/></div>
+      <div class="field"><label>GitHub repo <span class="opt">(optional)</span></label><input type="url" id="p${id}_github" placeholder="https://github.com/you/repo"/></div>
+    </div>`;
+  container.appendChild(div);
+  updateProjCount();
+  div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function removeProject(id) {
+  document.getElementById(id)?.remove();
+  // Renumber
+  document.querySelectorAll('.project-block .block-label').forEach((el,i) => el.textContent = `Project ${i+1}`);
+  updateProjCount();
+}
+
+// Init with 2 projects
+addProject(); addProject();
+
+function collectProjects() {
+  const projects = [];
+  document.querySelectorAll('.project-block').forEach(block => {
+    const sid = block.id.replace('pb','');
+    const name = (document.getElementById(`p${sid}_name`)?.value || '').trim();
+    if (!name) return;
+    projects.push({
+      name,
+      url: (document.getElementById(`p${sid}_url`)?.value || '').trim() || '#',
+      desc: (document.getElementById(`p${sid}_desc`)?.value || '').trim(),
+      tech: (document.getElementById(`p${sid}_tech`)?.value || '').trim(),
+      github: (document.getElementById(`p${sid}_github`)?.value || '').trim(),
+    });
+  });
+  return projects;
+}
+
+function getVal(id) { return (document.getElementById(id)?.value || '').trim(); }
+
+// ─── GENERATE ───
+async function generatePortfolio() {
+  const name = getVal('name'), email = getVal('email'), bio = getVal('bio'), jobtitle = getVal('jobtitle');
+  if (!name || !email || !bio || !jobtitle) {
+    alert('Please complete your name, title, bio, and email on the Personal tab first.'); goTab(0); return;
+  }
+  const projects = collectProjects();
+  if (projects.length === 0) {
+    alert('Please add at least one project on the Projects tab.'); goTab(1); return;
+  }
+
+  const themeId = getVal('selectedTheme') || 'blue';
+  const theme = THEMES.find(t => t.id === themeId) || THEMES[0];
+
+  const data = {
+    name, jobtitle, bio, email,
+    location: getVal('location'), skills: getVal('skills'), status: getVal('status'),
+    github: getVal('github'), linkedin: getVal('linkedin'), twitter: getVal('twitter'),
+    resume: getVal('resume'), website: getVal('website'), youtube: getVal('youtube'),
+    extraLabel: getVal('extraLabel'), extraUrl: getVal('extraUrl'),
+    theme, projects,
+  };
+
+  // Show loading
+  const overlay = document.getElementById('loadingOverlay');
+  overlay.classList.add('show');
+  const bar = document.getElementById('loadingBar');
+  let progress = 0;
+  const barInterval = setInterval(() => {
+    progress = Math.min(progress + Math.random() * 8, 88);
+    bar.style.width = progress + '%';
+  }, 600);
+
+  const msgs = [
+    ['Crafting your hero section...','Writing your intro and tagline'],
+    ['Building project cards...','Laying out your work beautifully'],
+    ['Applying your color theme...', `Styling with ${theme.name}`],
+    ['Adding skills & contact links...','Finalising your sections'],
+    ['Polishing the design...','Making it pixel-perfect'],
+  ];
+  let mi = 0;
+  const msgInterval = setInterval(() => {
+    const m = msgs[mi % msgs.length];
+    document.getElementById('loadingText').textContent = m[0];
+    document.getElementById('loadingSub').textContent = m[1];
+    mi++;
+  }, 2800);
+
+  try {
+    const projectsText = data.projects.map((p,i) =>
+      `${i+1}. "${p.name}": ${p.desc} | Tech: ${p.tech||'N/A'} | Live: ${p.url} | GitHub: ${p.github||'none'}`
+    ).join('\n');
+
+    const socialLinks = [
+      data.github && `GitHub: ${data.github}`,
+      data.linkedin && `LinkedIn: ${data.linkedin}`,
+      data.twitter && `Twitter: ${data.twitter}`,
+      data.resume && `Resume: ${data.resume}`,
+      data.website && `Website: ${data.website}`,
+      data.youtube && `YouTube: ${data.youtube}`,
+      (data.extraLabel && data.extraUrl) && `${data.extraLabel}: ${data.extraUrl}`,
+    ].filter(Boolean).join('\n');
+
+    const prompt = `Create a complete, professional, single-file HTML portfolio website for this person. Output ONLY the raw HTML — no markdown, no code fences, no explanation.
+
+PERSON DETAILS:
+Name: ${data.name}
+Role/Title: ${data.jobtitle}
+Bio: ${data.bio}
+Location: ${data.location || 'not specified'}
+Email: ${data.email}
+Skills: ${data.skills || 'not specified'}
+Status: ${data.status}
+
+PROJECTS (${data.projects.length} total):
+${projectsText}
+
+SOCIAL LINKS:
+${socialLinks || 'Email only'}
+
+COLOR THEME:
+Accent color: ${theme.accent}
+Light/background tint: ${theme.light}
+Dark/hover: ${theme.dark}
+Theme name: ${theme.name}
+
+REQUIREMENTS:
+- Single HTML file, all CSS embedded in <style> tag, no external CSS, only Google Fonts allowed
+- Google Fonts: Inter (400,500,600) for body + Playfair Display (700) for headings
+- Sticky nav with name/logo and smooth scroll links
+- Hero section: big name, title, bio, status badge showing "${data.status}", CTA buttons
+- Skills section: each skill as a styled pill/tag using accent color tint
+- Projects section: card grid, each card shows title, description, tech stack tags, live link button${data.github ? ', GitHub link' : ''}. If more than 6 projects, show a "Show more" toggle.
+- Contact section: all provided social links as styled buttons with matching icons (use inline SVG)
+- Footer
+- Design: clean, minimal, light background (#f7f6f3), white cards, generous whitespace
+- Fully responsive — mobile first, works on phones
+- Smooth hover effects on cards (subtle translateY + border color change)
+- All data must be real — zero placeholder text anywhere
+- DO NOT include any text like "Your Name", "your@email.com", or "link" — use the actual provided data`;
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 6000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const result = await resp.json();
+    clearInterval(msgInterval); clearInterval(barInterval);
+    bar.style.width = '100%';
+
+    let html = (result.content || []).map(b => b.text || '').join('');
+    html = html.replace(/^```html\s*/i, '').replace(/\s*```$/, '').trim();
+
+    if (!html || !html.toLowerCase().includes('<html')) throw new Error('Bad response');
+
+    generatedHTML = html;
+    setTimeout(() => { overlay.classList.remove('show'); showResult(html); }, 400);
+
+  } catch(err) {
+    clearInterval(msgInterval); clearInterval(barInterval);
+    overlay.classList.remove('show');
+    console.error(err);
+    alert('Something went wrong. Please try again.');
+  }
+}
+
+function showResult(html) {
+  document.getElementById('formWrap').style.display = 'none';
+  const rw = document.getElementById('resultWrap');
+  rw.classList.add('show');
+  document.getElementById('previewFrame').srcdoc = html;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function downloadPortfolio() {
+  if (!generatedHTML) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([generatedHTML], { type: 'text/html' }));
+  a.download = 'portfolio.html';
+  a.click();
+}
+
+function startOver() {
+  document.getElementById('resultWrap').classList.remove('show');
+  document.getElementById('formWrap').style.display = '';
+  goTab(0);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
